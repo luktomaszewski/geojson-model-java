@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+}
+
+group 'geojson'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.10.1'
+}
