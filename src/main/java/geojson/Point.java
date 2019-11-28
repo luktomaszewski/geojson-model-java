@@ -23,7 +23,7 @@ public class Point extends Geometry implements Serializable {
      */
     private Position coordinates;
 
-    private Point() {
+    public Point() {
         super(GeometryType.POINT);
     }
 
@@ -36,7 +36,6 @@ public class Point extends Geometry implements Serializable {
         this();
         this.coordinates = new Position(longitude, latitude);
     }
-
 
     public Position getCoordinates() {
         return coordinates;
