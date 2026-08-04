@@ -2,7 +2,7 @@ name: build
 
 on:
   push:
-    branches: [ develop, master, main ]
+    branches: [ master, main ]
   pull_request:
 
 jobs:
@@ -15,10 +15,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # This JDK only RUNS Gradle -- it has nothing to do with what we are testing.
+      # It is pinned because Gradle 8.14.3 supports at most Java 24: launch it on 25 and
+      # Groovy dies with "Unsupported class file major version 69" while parsing
+      # build.gradle, before any of our code is compiled.
+      #
+      # The JDK that COMPILES AND TESTS the code is chosen by the toolchain through
+      # -PjdkVersion below -- that is what this matrix actually varies. Gradle resolves it
+      # locally when installed and otherwise provisions it (foojay, see settings.gradle).
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: ${{ matrix.java }}
+          java-version: 21
 
       - uses: gradle/actions/setup-gradle@v4
 
