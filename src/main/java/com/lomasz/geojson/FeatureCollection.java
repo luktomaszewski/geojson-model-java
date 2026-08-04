@@ -1,10 +1,13 @@
 package com.lomasz.geojson;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -25,14 +28,27 @@ import java.util.Objects;
  * </pre>
  *
  * @param features the Features of this collection; possibly empty, never {@code null}
- * @param bbox     the bounding box, or {@code null}
+ * @param bbox           the bounding box, or {@code null}
+ * @param foreignMembers members outside the specification, preserved verbatim; never {@code null}
  * @see <a href="https://tools.ietf.org/html/rfc7946#section-3.3">The GeoJSON Format: section 3.3 FeatureCollection Object</a>
  */
 @JsonPropertyOrder({"type", "features", "bbox"})
-public record FeatureCollection(@JsonProperty("features") List<Feature> features, @JsonProperty("bbox") BoundingBox bbox) implements GeoJsonObject {
+public record FeatureCollection(@JsonProperty("features") List<Feature> features, @JsonProperty("bbox") BoundingBox bbox,
+        @JsonAnySetter Map<String, Object> foreignMembers) implements GeoJsonObject {
 
     public FeatureCollection {
         features = List.copyOf(Objects.requireNonNull(features, "features must not be null"));
+        foreignMembers = ForeignMembers.copyOf(foreignMembers);
+    }
+
+    /**
+     * Creates a FeatureCollection with no foreign members.
+     *
+     * @param features the Features of this collection
+     * @param bbox     the bounding box, or {@code null}
+     */
+    public FeatureCollection(List<Feature> features, BoundingBox bbox) {
+        this(features, bbox, null);
     }
 
     /**
@@ -41,7 +57,7 @@ public record FeatureCollection(@JsonProperty("features") List<Feature> features
      * @param features the Features of this collection
      */
     public FeatureCollection(List<Feature> features) {
-        this(features, null);
+        this(features, null, null);
     }
 
     /**
@@ -58,9 +74,20 @@ public record FeatureCollection(@JsonProperty("features") List<Feature> features
         return GeoJsonType.FEATURE_COLLECTION;
     }
 
+    @JsonAnyGetter
+    @Override
+    public Map<String, Object> foreignMembers() {
+        return foreignMembers;
+    }
+
     @Override
     public FeatureCollection withBbox(BoundingBox bbox) {
-        return new FeatureCollection(features, bbox);
+        return new FeatureCollection(features, bbox, foreignMembers);
+    }
+
+    @Override
+    public FeatureCollection withForeignMembers(Map<String, Object> foreignMembers) {
+        return new FeatureCollection(features, bbox, foreignMembers);
     }
 
 }

@@ -1,9 +1,12 @@
 package com.lomasz.geojson;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -46,10 +49,12 @@ import java.util.Objects;
  * @param bbox       the bounding box, or {@code null}
  * @see <a href="https://tools.ietf.org/html/rfc7946#section-3.1.8">The GeoJSON Format: section 3.1.8 GeometryCollection</a>
  */
-public record GeometryCollection(@JsonProperty("geometries") List<Geometry> geometries, @JsonProperty("bbox") BoundingBox bbox) implements Geometry {
+public record GeometryCollection(@JsonProperty("geometries") List<Geometry> geometries, @JsonProperty("bbox") BoundingBox bbox,
+        @JsonAnySetter Map<String, Object> foreignMembers) implements Geometry {
 
     public GeometryCollection {
         geometries = List.copyOf(Objects.requireNonNull(geometries, "geometries must not be null"));
+        foreignMembers = ForeignMembers.copyOf(foreignMembers);
     }
 
     /**
@@ -57,8 +62,18 @@ public record GeometryCollection(@JsonProperty("geometries") List<Geometry> geom
      *
      * @param geometries the parts of this composition
      */
+    /**
+     * Creates a GeometryCollection with no foreign members.
+     *
+     * @param geometries the coordinates of this geometry
+     * @param bbox the bounding box, or {@code null}
+     */
+    public GeometryCollection(List<Geometry> geometries, BoundingBox bbox) {
+        this(geometries, bbox, null);
+    }
+
     public GeometryCollection(List<Geometry> geometries) {
-        this(geometries, null);
+        this(geometries, null, null);
     }
 
     /**
@@ -75,9 +90,20 @@ public record GeometryCollection(@JsonProperty("geometries") List<Geometry> geom
         return GeoJsonType.GEOMETRY_COLLECTION;
     }
 
+    @JsonAnyGetter
+    @Override
+    public Map<String, Object> foreignMembers() {
+        return foreignMembers;
+    }
+
     @Override
     public GeometryCollection withBbox(BoundingBox bbox) {
-        return new GeometryCollection(geometries, bbox);
+        return new GeometryCollection(geometries, bbox, foreignMembers);
+    }
+
+    @Override
+    public GeometryCollection withForeignMembers(Map<String, Object> foreignMembers) {
+        return new GeometryCollection(geometries, bbox, foreignMembers);
     }
 
 }

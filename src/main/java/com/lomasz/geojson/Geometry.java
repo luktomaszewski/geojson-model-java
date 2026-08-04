@@ -38,4 +38,7 @@ public sealed interface Geometry extends GeoJsonObject
     @Override
     Geometry withBbox(BoundingBox bbox);
 
+    @Override
+    Geometry withForeignMembers(java.util.Map<String, Object> foreignMembers);
+
 }

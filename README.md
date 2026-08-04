@@ -180,9 +180,23 @@ from JSON:
 Ring winding order is **not** enforced: §3.1.6 asks parsers not to reject polygons that fail to
 follow the right-hand rule.
 
-Unknown ("foreign") members are ignored when reading rather than rejected. `geometry` and
-`properties` are always written on a Feature, as `null` when absent, because RFC 7946 requires both
-members to be present.
+`geometry` and `properties` are always written on a Feature, as `null` when absent, because
+RFC 7946 requires both members to be present.
+
+## Foreign members
+
+[Section 6.1](https://tools.ietf.org/html/rfc7946#section-6.1) allows a GeoJSON object to carry
+members the specification does not define. They are neither rejected nor dropped: they are captured
+and written back out, so reading a document, changing part of it and writing it again does not lose
+data.
+
+```java
+Feature feature = mapper.readValue(json, Feature.class);
+
+feature.foreignMembers();                       // {"crs": {...}} -- empty rather than null
+feature.withId("f1").foreignMembers();          // carried over by every with... method
+mapper.writeValueAsString(feature);             // "crs" is still there
+```
 
 ## Building
 

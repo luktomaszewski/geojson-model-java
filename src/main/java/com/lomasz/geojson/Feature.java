@@ -1,5 +1,7 @@
 package com.lomasz.geojson;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,7 +39,8 @@ import java.util.Map;
  * @param geometry   any Geometry object, or {@code null} if the Feature is unlocated
  * @param properties the Feature's properties, or {@code null}
  * @param id         the Feature's identifier — a {@link String} or a {@link Number} per RFC 7946 — or {@code null}
- * @param bbox       the bounding box, or {@code null}
+ * @param bbox           the bounding box, or {@code null}
+ * @param foreignMembers members outside the specification, preserved verbatim; never {@code null}
  * @see <a href="https://tools.ietf.org/html/rfc7946#section-3.2">The GeoJSON Format: section 3.2 Feature Object</a>
  */
 @JsonPropertyOrder({"type", "id", "geometry", "properties", "bbox"})
@@ -45,7 +48,8 @@ public record Feature(
         @JsonProperty("geometry") @JsonInclude(JsonInclude.Include.ALWAYS) Geometry geometry,
         @JsonProperty("properties") @JsonInclude(JsonInclude.Include.ALWAYS) Map<String, Object> properties,
         @JsonProperty("id") Object id,
-        @JsonProperty("bbox") BoundingBox bbox) implements GeoJsonObject {
+        @JsonProperty("bbox") BoundingBox bbox,
+        @JsonAnySetter Map<String, Object> foreignMembers) implements GeoJsonObject {
 
     public Feature {
         if (properties != null) {
@@ -57,6 +61,19 @@ public record Feature(
             throw new IllegalArgumentException(
                     "A Feature id must be a String or a Number, got " + id.getClass().getName());
         }
+        foreignMembers = ForeignMembers.copyOf(foreignMembers);
+    }
+
+    /**
+     * Creates a Feature with no foreign members.
+     *
+     * @param geometry   any Geometry object, or {@code null} if the Feature is unlocated
+     * @param properties the Feature's properties, or {@code null}
+     * @param id         the Feature's identifier, or {@code null}
+     * @param bbox       the bounding box, or {@code null}
+     */
+    public Feature(Geometry geometry, Map<String, Object> properties, Object id, BoundingBox bbox) {
+        this(geometry, properties, id, bbox, null);
     }
 
     /**
@@ -65,7 +82,7 @@ public record Feature(
      * @param geometry any Geometry object, or {@code null} if the Feature is unlocated
      */
     public Feature(Geometry geometry) {
-        this(geometry, null, null, null);
+        this(geometry, null, null, null, null);
     }
 
     /**
@@ -75,7 +92,7 @@ public record Feature(
      * @param properties the Feature's properties, or {@code null}
      */
     public Feature(Geometry geometry, Map<String, Object> properties) {
-        this(geometry, properties, null, null);
+        this(geometry, properties, null, null, null);
     }
 
     /**
@@ -101,12 +118,23 @@ public record Feature(
         return GeoJsonType.FEATURE;
     }
 
+    @JsonAnyGetter
+    @Override
+    public Map<String, Object> foreignMembers() {
+        return foreignMembers;
+    }
+
+    @Override
+    public Feature withForeignMembers(Map<String, Object> foreignMembers) {
+        return new Feature(geometry, properties, id, bbox, foreignMembers);
+    }
+
     /**
      * @param id the identifier to attach, or {@code null} to drop it
      * @return a copy of this Feature with the given identifier
      */
     public Feature withId(String id) {
-        return new Feature(geometry, properties, id, bbox);
+        return new Feature(geometry, properties, id, bbox, foreignMembers);
     }
 
     /**
@@ -114,7 +142,7 @@ public record Feature(
      * @return a copy of this Feature with the given identifier
      */
     public Feature withId(Number id) {
-        return new Feature(geometry, properties, id, bbox);
+        return new Feature(geometry, properties, id, bbox, foreignMembers);
     }
 
     /**
@@ -122,12 +150,12 @@ public record Feature(
      * @return a copy of this Feature with the given properties
      */
     public Feature withProperties(Map<String, Object> properties) {
-        return new Feature(geometry, properties, id, bbox);
+        return new Feature(geometry, properties, id, bbox, foreignMembers);
     }
 
     @Override
     public Feature withBbox(BoundingBox bbox) {
-        return new Feature(geometry, properties, id, bbox);
+        return new Feature(geometry, properties, id, bbox, foreignMembers);
     }
 
 }

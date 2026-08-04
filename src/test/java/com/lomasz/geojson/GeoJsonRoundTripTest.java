@@ -113,14 +113,18 @@ class GeoJsonRoundTripTest {
     }
 
     @Test
-    void ignoresForeignMembers() {
-        Feature feature = Json.read("""
+    void preservesForeignMembersAtEveryLevel() {
+        String json = """
                 {"type": "Feature",
                  "geometry": {"type": "Point", "coordinates": [102.0, 0.5], "srid": 4326},
                  "properties": null,
-                 "title": "a foreign member"}""", Feature.class);
+                 "title": "a foreign member"}""";
 
-        assertThat(feature).isEqualTo(Feature.of(Point.of(102.0, 0.5)));
+        Feature feature = Json.read(json, Feature.class);
+
+        assertThat(feature.foreignMembers()).containsEntry("title", "a foreign member");
+        assertThat(feature.geometry().foreignMembers()).containsEntry("srid", 4326);
+        Json.assertSerializesTo(feature, json);
     }
 
     @Test

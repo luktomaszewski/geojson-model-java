@@ -1,10 +1,13 @@
 package com.lomasz.geojson;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * To specify a constraint specific to Polygons, it is useful to introduce the concept of a linear ring:
@@ -38,13 +41,16 @@ import java.util.List;
  * </pre>
  *
  * @param coordinates an array of linear ring coordinate arrays
- * @param bbox        the bounding box, or {@code null}
+ * @param bbox           the bounding box, or {@code null}
+ * @param foreignMembers members outside the specification, preserved verbatim; never {@code null}
  * @see <a href="https://tools.ietf.org/html/rfc7946#section-3.1.6">The GeoJSON Format: section 3.1.6 Polygon</a>
  */
-public record Polygon(@JsonProperty("coordinates") List<List<Position>> coordinates, @JsonProperty("bbox") BoundingBox bbox) implements Geometry {
+public record Polygon(@JsonProperty("coordinates") List<List<Position>> coordinates, @JsonProperty("bbox") BoundingBox bbox,
+        @JsonAnySetter Map<String, Object> foreignMembers) implements Geometry {
 
     public Polygon {
         coordinates = Coordinates.rings(coordinates);
+        foreignMembers = ForeignMembers.copyOf(foreignMembers);
     }
 
     /**
@@ -52,8 +58,18 @@ public record Polygon(@JsonProperty("coordinates") List<List<Position>> coordina
      *
      * @param coordinates an array of linear ring coordinate arrays
      */
+    /**
+     * Creates a Polygon with no foreign members.
+     *
+     * @param coordinates the coordinates of this geometry
+     * @param bbox the bounding box, or {@code null}
+     */
+    public Polygon(List<List<Position>> coordinates, BoundingBox bbox) {
+        this(coordinates, bbox, null);
+    }
+
     public Polygon(List<List<Position>> coordinates) {
-        this(coordinates, null);
+        this(coordinates, null, null);
     }
 
     /**
@@ -91,9 +107,20 @@ public record Polygon(@JsonProperty("coordinates") List<List<Position>> coordina
         return GeoJsonType.POLYGON;
     }
 
+    @JsonAnyGetter
+    @Override
+    public Map<String, Object> foreignMembers() {
+        return foreignMembers;
+    }
+
     @Override
     public Polygon withBbox(BoundingBox bbox) {
-        return new Polygon(coordinates, bbox);
+        return new Polygon(coordinates, bbox, foreignMembers);
+    }
+
+    @Override
+    public Polygon withForeignMembers(Map<String, Object> foreignMembers) {
+        return new Polygon(coordinates, bbox, foreignMembers);
     }
 
 }

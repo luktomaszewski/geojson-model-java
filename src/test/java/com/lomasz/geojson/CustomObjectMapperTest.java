@@ -58,12 +58,19 @@ class CustomObjectMapperTest {
         assertThat(UPPER_CAMEL.readValue(json, GeoJsonObject.class)).isEqualTo(Feature.of(Point.of(102.0, 0.5)));
     }
 
+    /**
+     * The any-setter claims unknown members before FAIL_ON_UNKNOWN_PROPERTIES can reject them,
+     * so a strict mapper reads GeoJSON with foreign members instead of throwing.
+     */
     @Test
-    void foreignMembersAreIgnoredEvenWhenTheMapperFailsOnUnknownProperties() throws Exception {
+    void foreignMembersAreCapturedEvenWhenTheMapperFailsOnUnknownProperties() throws Exception {
         String json = """
                 {"type": "FeatureCollection", "features": [], "crs": {"type": "name"}}""";
 
-        assertThat(SNAKE_CASE.readValue(json, FeatureCollection.class)).isEqualTo(FeatureCollection.of());
+        FeatureCollection collection = SNAKE_CASE.readValue(json, FeatureCollection.class);
+
+        assertThat(collection.features()).isEmpty();
+        assertThat(collection.foreignMembers()).containsKey("crs");
     }
 
 }
