@@ -198,3 +198,7 @@ If you find any bug or improvement, please report it in the `Issues` section.
 
 * [The GeoJSON Format Specification](https://tools.ietf.org/html/rfc7946)
 * [GeoJSON Web Viewer](http://geojson.io/)
+
+## License
+
+[MIT](LICENSE)
