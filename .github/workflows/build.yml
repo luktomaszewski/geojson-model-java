@@ -1,0 +1,31 @@
+name: build
+
+on:
+  push:
+    branches: [ develop, master, main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ 21, 25 ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: ./gradlew build -PjdkVersion=${{ matrix.java }}
+
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report-java-${{ matrix.java }}
+          path: build/reports/tests/test

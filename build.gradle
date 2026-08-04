@@ -1,28 +1,53 @@
 plugins {
-    id 'java'
+    id 'java-library'
 }
 
-group 'geojson'
-version '1.0-SNAPSHOT'
+group = 'com.lomasz'
+version = '2.0.0-SNAPSHOT'
 
-sourceCompatibility = 1.8
+def jdkVersion = (findProperty('jdkVersion') ?: '25') as Integer
+def releaseVersion = 21
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(jdkVersion)
+    }
+    withJavadocJar()
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = releaseVersion
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile 'com.fasterxml.jackson.core:jackson-annotations:2.10.1'
+    api platform('com.fasterxml.jackson:jackson-bom:2.22.1')
+    api 'com.fasterxml.jackson.core:jackson-annotations'
 
-    testCompile 'org.junit.jupiter:junit-jupiter-api:5.4.2'
-    testCompile 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
-
-    testCompile "org.mockito:mockito-junit-jupiter:3.1.0"
-    testCompile "org.mockito:mockito-core:3.1.0"
-
-    testCompile 'org.assertj:assertj-core:3.11.1'
+    testImplementation platform('org.junit:junit-bom:6.1.2')
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind'
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.assertj:assertj-core:3.27.7'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-test {
+tasks.named('javadoc') {
+    options.addStringOption('Xdoclint:all,-missing', '-quiet')
+}
+
+tasks.named('test') {
     useJUnitPlatform()
+    testLogging {
+        events = ['failed']
+        exceptionFormat = 'full'
+    }
+}
+
+tasks.named('wrapper') {
+    gradleVersion = '8.14.3'
+    distributionType = Wrapper.DistributionType.BIN
 }

@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      jackson:
+        patterns: [ "com.fasterxml.jackson*" ]
+      junit:
+        patterns: [ "org.junit*" ]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

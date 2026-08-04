@@ -1,10 +1,10 @@
-package geojson;
+package com.lomasz.geojson;
 
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A GeoJSON object with type "GeometryCollection" is a Geometry object.
@@ -23,7 +23,6 @@ import java.util.List;
  * when that single part or a single object of multipart type (MultiPoint, MultiLineString, or MultiPolygon) could be used instead.
  * <p>
  * Each element in the "geometries" array of a GeometryCollection is one of the Geometry objects described above:
- * <p>
  * <pre>
  * {
  *  "type": "GeometryCollection",
@@ -43,57 +42,42 @@ import java.util.List;
  * }
  * </pre>
  *
+ * @param geometries the parts of this composition; possibly empty, never {@code null}
+ * @param bbox       the bounding box, or {@code null}
  * @see <a href="https://tools.ietf.org/html/rfc7946#section-3.1.8">The GeoJSON Format: section 3.1.8 GeometryCollection</a>
  */
-public class GeometryCollection implements Serializable {
+public record GeometryCollection(@JsonProperty("geometries") List<Geometry> geometries, @JsonProperty("bbox") BoundingBox bbox) implements Geometry {
 
-    private static final long serialVersionUID = -7840397195631076199L;
-
-    private final GeometryCollectionType type = GeometryCollectionType.GEOMETRY_COLLECTION;
+    public GeometryCollection {
+        geometries = List.copyOf(Objects.requireNonNull(geometries, "geometries must not be null"));
+    }
 
     /**
-     * The value of "geometries" is an array.
-     * Each element of this array is a GeoJSON Geometry object. It is possible for this array to be empty.
+     * Creates a GeometryCollection with no bounding box.
+     *
+     * @param geometries the parts of this composition
      */
-    private List<Geometry> geometries = new ArrayList<>();
-
-    public GeometryCollectionType getType() {
-        return type;
+    public GeometryCollection(List<Geometry> geometries) {
+        this(geometries, null);
     }
 
-    public List<Geometry> getGeometries() {
-        return geometries;
+    /**
+     * @param geometries the parts of this composition
+     * @return a GeometryCollection composed of those geometries
+     */
+    public static GeometryCollection of(Geometry... geometries) {
+        return new GeometryCollection(List.of(geometries));
     }
 
-    public void setGeometries(List<Geometry> geometries) {
-        this.geometries = geometries;
+    @JsonIgnore
+    @Override
+    public GeoJsonType type() {
+        return GeoJsonType.GEOMETRY_COLLECTION;
     }
 
-    public GeometryCollection geometries(List<Geometry> geometries) {
-        this.geometries = geometries;
-        return this;
-    }
-
-    public GeometryCollection addGeometry(Geometry geometry) {
-        this.geometries.add(geometry);
-        return this;
-    }
-
-    public enum GeometryCollectionType {
-        GEOMETRY_COLLECTION("GeometryCollection");
-
-        private String value;
-
-        GeometryCollectionType(String value) {
-            this.value = value;
-        }
-
-        @Override
-        @JsonValue
-        public String toString() {
-            return value;
-        }
+    @Override
+    public GeometryCollection withBbox(BoundingBox bbox) {
+        return new GeometryCollection(geometries, bbox);
     }
 
 }
-
