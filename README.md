@@ -1,5 +1,7 @@
 # GeoJSON Object Model for Java
 
+[![build](https://github.com/luktomaszewski/geojson-model-java/actions/workflows/build.yml/badge.svg)](https://github.com/luktomaszewski/geojson-model-java/actions/workflows/build.yml)
+
 An immutable Java object model for [RFC 7946](https://tools.ietf.org/html/rfc7946), the GeoJSON
 Format Specification. It reads and writes GeoJSON through Jackson with no configuration, no custom
 module and no serializer to register.
