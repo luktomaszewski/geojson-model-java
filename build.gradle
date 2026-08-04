@@ -35,6 +35,32 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+// The unit tests run on the classpath, where the module descriptor is inert. This source set
+// is a real consumer module: it compiles and runs against the published jar on the module
+// path, which is the only way to catch a missing 'opens' or 'requires' before a user does.
+sourceSets {
+    moduleSmoke
+}
+
+dependencies {
+    moduleSmokeImplementation files(tasks.named('jar'))
+    moduleSmokeImplementation platform('com.fasterxml.jackson:jackson-bom:2.22.1')
+    moduleSmokeImplementation 'com.fasterxml.jackson.core:jackson-databind'
+}
+
+tasks.register('moduleSmokeTest', JavaExec) {
+    description = 'Runs a consumer module against the jar on the module path'
+    group = 'verification'
+    classpath = sourceSets.moduleSmoke.runtimeClasspath
+    mainModule = 'smoke'
+    mainClass = 'smoke.Main'
+    javaLauncher = javaToolchains.launcherFor(java.toolchain)
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('moduleSmokeTest')
+}
+
 tasks.named('javadoc') {
     options.addStringOption('Xdoclint:all,-missing', '-quiet')
 }
@@ -51,3 +77,4 @@ tasks.named('wrapper') {
     gradleVersion = '8.14.3'
     distributionType = Wrapper.DistributionType.BIN
 }
+
