@@ -1,8 +1,8 @@
 package smoke;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lomasz.geojson.Feature;
-import com.lomasz.geojson.GeoJsonObject;
+import io.github.luktomaszewski.geojson.Feature;
+import io.github.luktomaszewski.geojson.GeoJsonObject;
 
 public class Main {
     public static void main(String[] args) throws Exception {

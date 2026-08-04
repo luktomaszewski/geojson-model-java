@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
 }
 
-group = 'com.lomasz'
+group = 'io.github.luktomaszewski'
 version = '1.0.0'
 
 def jdkVersion = (findProperty('jdkVersion') ?: '25') as Integer

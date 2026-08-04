@@ -1,4 +1,4 @@
 module smoke {
-    requires com.lomasz.geojson;
+    requires io.github.luktomaszewski.geojson;
     requires com.fasterxml.jackson.databind;
 }

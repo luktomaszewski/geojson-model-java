@@ -8,11 +8,11 @@
  * record components through their backing fields, does not hit an
  * {@code InaccessibleObjectException} that this library could have prevented.
  */
-module com.lomasz.geojson {
+module io.github.luktomaszewski.geojson {
 
     requires com.fasterxml.jackson.annotation;
 
-    exports com.lomasz.geojson;
-    opens com.lomasz.geojson;
+    exports io.github.luktomaszewski.geojson;
+    opens io.github.luktomaszewski.geojson;
 
 }
