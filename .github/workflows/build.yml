@@ -13,7 +13,7 @@ jobs:
       matrix:
         java: [ 21, 25 ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # This JDK only RUNS Gradle -- it has nothing to do with what we are testing.
       # It is pinned because Gradle 8.14.3 supports at most Java 24: launch it on 25 and
