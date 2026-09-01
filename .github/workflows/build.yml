@@ -23,7 +23,7 @@ jobs:
       # The JDK that COMPILES AND TESTS the code is chosen by the toolchain through
       # -PjdkVersion below -- that is what this matrix actually varies. Gradle resolves it
       # locally when installed and otherwise provisions it (foojay, see settings.gradle).
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
